@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "cmd",
+  "version": "1.1",
+  "description": "Insane Extension. Created by Tim https://github.com/brightsidedeveloper/cmd",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "icon.png"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+X"
+      },
+      "description": "Open the extension"
+    }
+  },
+  "permissions": ["activeTab", "scripting", "tabs", "storage"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}
