@@ -17,7 +17,7 @@ initBrightBase(
 type ContentState = {
   listening: boolean;
   autoSpeakOn: boolean;
-  autoSendOn: boolean;
+  autoBet: boolean;
   autoListenOn: boolean;
   speaking: boolean;
   showMore: boolean;
@@ -26,7 +26,7 @@ type ContentState = {
 const contentStateAtom = atom<ContentState>({
   listening: false,
   autoSpeakOn: false,
-  autoSendOn: false,
+  autoBet: false,
   autoListenOn: false,
   speaking: false,
   showMore: false,
@@ -53,13 +53,15 @@ type VSCodeEvents = {
   GET_OPEN_FILES: { prompt: string };
   RECEIVE_SELECTED_CODE: { prompt: string; code: string; fileName: string };
   RECEIVE_OPEN_FILES: { prompt: string; files: { path: string; content: string }[] };
+  //* Worker Events
+  CODE_SNIPPET: { snippet: string };
 };
 
 const vscode = new BrightBaseRealtime<VSCodeEvents>('vscode-chrome');
 
 export default function App() {
   const [contentState, setContentState] = useAtom(contentStateAtom);
-  const { autoListenOn, autoSendOn, autoSpeakOn, listening, speaking, showMore } = contentState;
+  const { autoListenOn, autoBet, autoSpeakOn, listening, speaking, showMore } = contentState;
 
   const [status, setStatus] = useState('disconnected');
   const [vsCodeEvent, setVsCodeEvent] = useState<keyof VSCodeEvents | null>(null);
@@ -72,6 +74,15 @@ export default function App() {
     const t = setTimeout(() => vscode.emit('CONNECTED', { optional: 'optional' }), 1000);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(
+    () =>
+      vscode.on('CODE_SNIPPET', ({ snippet }) => {
+        console.log('snippet', snippet);
+        setVsCodeEvent('CODE_SNIPPET');
+      }),
+    []
+  );
 
   useEffect(
     () =>
@@ -146,8 +157,8 @@ export default function App() {
               showMore ? 'min-w-full' : 'min-w-[105%] translate-x-[8px]'
             )}
           >
-            <Label>Auto Send:</Label>
-            <Switch checked={autoSendOn} onCheckedChange={() => updateState({ autoSendOn: !autoSendOn })} />
+            <Label>Auto Bet:</Label>
+            <Switch checked={autoBet} onCheckedChange={() => updateState({ autoBet: !autoBet })} />
           </div>
           <div
             className={tw(
@@ -183,9 +194,9 @@ export default function App() {
             showMore ? 'max-w-[250px]' : 'max-w-0'
           )}
         >
-          <p>"Listen" & "Stop Listening" & "Nevermind"</p>
+          <p>"Hey" & "Stop Listening" & "Nevermind"</p>
           <p>"Speak" & "Stop"</p>
-          <p>"Toggle [send/speak/listen/show more]"</p>
+          <p>"Toggle [bet/speak/hey/show more]"</p>
           <p>"[add] [selected code/open files]"</p>
         </div>
       </div>
@@ -193,7 +204,9 @@ export default function App() {
         <p
           className={tw(
             'text-lg transition-all',
-            vsCodeEvent
+            vsCodeEvent === 'CODE_SNIPPET'
+              ? 'text-cyan-500 scale-105'
+              : vsCodeEvent
               ? 'text-blue-500 scale-105'
               : speaking
               ? 'animate-bounce text-fuchsia-500'
@@ -202,7 +215,15 @@ export default function App() {
               : 'text-amber-500'
           )}
         >
-          {vsCodeEvent ? 'Received Code' : speaking ? 'Speaking' : listening ? 'Listening' : 'On Standby'}
+          {vsCodeEvent === 'CODE_SNIPPET'
+            ? 'Injecting Code'
+            : vsCodeEvent
+            ? 'Received Code'
+            : speaking
+            ? 'Speaking'
+            : listening
+            ? 'Listening'
+            : 'On Standby'}
         </p>
       </div>
       <div className={tw('flex justify-center items-center py-5 uppercase', status === 'connected' ? 'text-green-500' : 'text-red-500')}>

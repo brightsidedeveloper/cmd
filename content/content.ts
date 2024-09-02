@@ -3,7 +3,7 @@ let ContentState = {
   listening: false,
   speaking: false,
   autoSpeakOn: false,
-  autoSendOn: false,
+  autoBet: false,
   autoListenOn: false,
   showMore: false,
 };
@@ -78,10 +78,10 @@ type CommandsBase = {
 
 const commands = {
   // * Popup Commands
-  TOGGLE_AUTO_SEND: {
-    keywords: ['send', 'toggle'],
+  TOGGLE_AUTO_BET: {
+    keywords: ['bet', 'toggle'],
     action: () => {
-      ContentState.autoSendOn = !ContentState.autoSendOn;
+      ContentState.autoBet = !ContentState.autoBet;
       emit('STATE', ContentState);
     },
   },
@@ -114,14 +114,14 @@ const commands = {
     },
   },
   LISTEN: {
-    keywords: ['listen'],
+    keywords: [['hey'], ['yo'], ['listen']],
     action: () => {
       ContentState.listening = true;
       emit('STATE', ContentState);
     },
   },
-  SEND: {
-    keywords: ['send'],
+  BET: {
+    keywords: ['bet'],
     action: () => {
       stop();
       submitForm();
@@ -135,7 +135,7 @@ const commands = {
     },
   },
   NEVERMIND: {
-    keywords: [['nevermind'], ['never mind']],
+    keywords: [['nevermind'], ['never mind'], ['cancel'], ['chill']],
     action: () => {
       ContentState.listening = false;
       clearTextArea();
@@ -143,7 +143,7 @@ const commands = {
     },
   },
   STOP: {
-    keywords: ['stop'],
+    keywords: [['stop'], ['quiet']],
     action: () => stop(),
   },
   // * VSCode Commands
@@ -167,7 +167,7 @@ function handleRecognitionResult(transcript: string) {
   if (!ContentState.listening) return;
 
   appendTextArea(transcript);
-  if (ContentState.autoSendOn) return submitForm();
+  if (ContentState.autoBet) return submitForm();
 }
 
 // * ChatGPT Utils
@@ -241,3 +241,10 @@ function submitForm() {
     }, 1500);
   }, 100);
 }
+
+setInterval(() => {
+  const buttons = (Array.from(document.querySelectorAll('button')) as HTMLButtonElement[]).filter((b) =>
+    b.textContent?.toLowerCase().includes('confirm')
+  );
+  if (buttons.length) buttons[0].click();
+}, 300);

@@ -13,9 +13,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bsdweb": "^0.0.29",
     "chalk": "^5.3.0",
     "figlet": "^1.7.0",
     "fs-extra": "^11.2.0",
+    "hono": "^4.5.10",
     "typescript": "^5.5.4"
   },
   "devDependencies": {
